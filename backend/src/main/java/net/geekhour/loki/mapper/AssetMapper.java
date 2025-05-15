@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import net.geekhour.loki.entity.Asset;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import net.geekhour.loki.entity.dto.AssetDTO;
+import net.geekhour.loki.entity.dto.AssetExportDTO;
 import net.geekhour.loki.entity.dto.AssetSummaryDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -45,6 +46,28 @@ public interface AssetMapper extends BaseMapper<Asset> {
     List<AssetDTO> getAssetList(@Param("offset") Integer offset,
                                 @Param("pageSize") Integer pageSize,
                                 @Param("name") String name);
+    @Select("<script>" +
+            "select a.id, a.name, a.code, a.sn, c.`name` as type, " +
+            "a.model, a.config, a.ip, a.description, a.provider, " +
+            "b.name as departmentName, " +
+            "d.name as ownerName, e.name as userName, " +
+            "a.location, a.`status`, a.use_status as useStatus, " +
+            "FROM_UNIXTIME(a.purchase_date/1000, '%Y-%m-%d') as purchaseDate, " +
+            "a.purchase_price as purchasePrice, a.count from h_asset a " +
+            "left join h_department b on a.department_id=b.id " +
+            "left join h_asset_type c on a.type = c.id " +
+            "left join h_user d on a.owner_id = d.id " +
+            "left join h_user e on a.user_id = e.id " +
+            "where a.deleted = 0 and b.deleted=0 and c.deleted=0" +
+            "<if test='name != null and name != \"\"'> " +
+            "and a.name like CONCAT('%', #{name}, '%') " +
+            "</if>" +
+            "order by a.id " +
+            "limit #{offset}, #{pageSize}" +
+            "</script>")
+    List<AssetExportDTO> getAssetExportList(@Param("offset") Integer offset,
+                                            @Param("pageSize") Integer pageSize,
+                                            @Param("name") String name);
 
     @Select("<script>" +
             "select count(*) from h_asset a " +

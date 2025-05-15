@@ -11,6 +11,18 @@
       <el-button type="primary" :icon="Search" @click="handleSearch">搜索</el-button>
       <el-button type="primary" :icon="Plus" @click="handleAddWithFetch"> 新增 </el-button>
       <el-button type="warning" :icon="Setting" @click="showColumnSettings">列设置</el-button>
+      <!-- 隐藏的文件输入，用于触发“导入” -->
+      <input
+          ref="fileInput"
+          type="file"
+          accept=".xls,.xlsx"
+          style="display: none"
+          @change="onFileChange"
+      />
+      <!-- 导入按钮 ：调用 triggerImport() -->
+      <el-button type="primary" :icon="Upload" @click="triggerImport">导入</el-button>
+      <!-- 导出按钮 -->
+      <el-button type="primary" :icon="Download" @click="onExport">导出</el-button>
     </div>
     <el-table
       :data="tableData"
@@ -127,11 +139,14 @@
 import { onMounted, ref, computed } from 'vue'
 import { useAssetType } from '@/hooks/useAssetType'
 import { useDepartment } from '@/hooks/useDepartment'
-import { Delete, Edit, Search, Plus, Memo, Setting } from '@element-plus/icons-vue'
+import { Delete, Edit, Search, Plus, Memo, Setting, Upload, Download} from '@element-plus/icons-vue'
 import { useAsset } from '@/hooks/useAsset'
 import AssetDialog from '@/components/asset/AssetDialog.vue'
 import AssetBorrowDialog from '@/components/asset/AssetBorrowDialog.vue'
 import ColumnSettings from '@/components/asset/ColumnSettings.vue'
+// 新增导入/导出 API
+import { exportAssetList, importAssetList } from '@/api/asset'
+import { ElMessage } from 'element-plus'
 
 const { assetTypes, fetchAssetTypes } = useAssetType()
 const { departments, fetchDepartments } = useDepartment()
@@ -153,7 +168,12 @@ const {
   handleBorrow,
   handleSuccess
 } = useAsset()
-
+// 用于触发文件选择
+const fileInput = ref<HTMLInputElement | null>(null)
+// 新增：触发文件选择对话框
+function triggerImport() {
+  fileInput.value?.click()
+}
 // 定义所有字段
 const allFields = [
   { value: 'name', label: '资产名称' },
@@ -257,6 +277,62 @@ const handleEditWithFetch = async (index: number, row: any) => {
   await fetchDepartments()
   await handleEdit(index, row)
 }
+
+// —— 导出资产 ——
+const onExport = async () => {
+  try {
+    const blob = await exportAssetList({
+      pageIndex: query.pageIndex,
+      pageSize: query.pageSize,
+      name: query.name,
+    });
+    console.log('收到 Blob：', blob, '大小：', blob.size, '类型：', blob.type);
+    // 检查 blob 是否有效
+    if (!blob) {
+      ElMessage.error("导出失败：未获取到数据");
+      return;
+    }
+    // const url = window.URL.createObjectURL(blob);
+    const url = window.URL.createObjectURL(new Blob([blob]));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'assets.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    // 1) 在控制台输出整个错误对象
+    console.error('导出时发生错误:', err);
+    // 2) 继续给用户反馈
+    ElMessage.error('导出失败，详情请看控制台');
+  }
+};
+
+// —— 导入资产 ——
+const onFileChange = async (e: Event) => {
+  const files = (e.target as HTMLInputElement).files
+  if (!files?.length) return
+  try {
+    const result = await importAssetList(files[0])
+    let msg = `共 ${result.total} 条，成功 ${result.successCount} 条`
+    if (result.failureCount > 0) {
+      msg += `，失败 ${result.failureCount} 条（详情见控制台）`
+      ElMessage.warning(msg)
+      console.table(result.errors)
+    } else {
+      ElMessage.success(msg)
+    }
+    // 导入完成后刷新列表
+    await getData()
+  } catch {
+    ElMessage.error('导入失败')
+  } finally {
+    // 重置文件输入，使得同一文件可再次选择
+    fileInput.value!.value = ''
+  }
+}
+
 </script>
 
 <style scoped>

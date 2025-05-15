@@ -49,3 +49,10 @@ export interface AssetSummary {
 }
 
 export type AssetSummaryResponse = ApiResponse<AssetSummary>
+// 新增导入结果的接口
+export interface AssetImportResultDTO {
+  total: number
+  successCount: number
+  failureCount: number
+  errors: string[]    // 每条格式如 "第3行：编码重复"
+}

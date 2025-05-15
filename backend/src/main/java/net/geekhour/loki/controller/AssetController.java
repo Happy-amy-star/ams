@@ -5,15 +5,21 @@ import net.geekhour.loki.common.ResponseUtil;
 import net.geekhour.loki.entity.dto.AssetDTO;
 import net.geekhour.loki.entity.dto.AssetSummaryDTO;
 import net.geekhour.loki.service.IAssetService;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.servlet.http.HttpServletResponse;
+import org.springframework.web.multipart.MultipartFile;
+import net.geekhour.loki.entity.dto.AssetImportResultDTO;
 /**
  * <p>
  * 前端控制器
@@ -29,6 +35,7 @@ public class AssetController {
 
     @Autowired
     IAssetService assetService;
+    private final ObjectMapper objectMapper = new ObjectMapper();  // ← 新增
 
     /**
      * list all assets (列出所有资产)
@@ -182,6 +189,110 @@ public class AssetController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseUtil.error(500, e.getMessage());
+        }
+    }
+
+    /** —— 导出：一次性导出页面所有资产 —— */
+
+//    public ResponseEntity<ByteArrayResource> exportToExcel(@RequestBody(required = false) String requestBody) {
+//        try {
+//            // 1. 解析前端 JSON 参数
+//            Map<String, Object> params = objectMapper.readValue(
+//                    requestBody == null ? "{}" : requestBody,
+//                    Map.class
+//            );
+//
+//            // 2. 让 Service 生成一个 Workbook（不再写入 response）
+//            Workbook workbook = assetService.buildExportWorkbook(params);
+//
+//            // 3. 把 Workbook 写到内存里
+//            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//            workbook.write(baos);
+//            workbook.close();
+//            byte[] bytes = baos.toByteArray();
+//
+//            // 4. 构建 HTTP 头
+//            HttpHeaders headers = new HttpHeaders();
+//            headers.setContentType(
+//                    MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+//            );
+//            headers.setContentDisposition(
+//                    ContentDisposition.attachment().filename("assets.xlsx").build()
+//            );
+//            headers.setContentLength(bytes.length);
+//
+//            // 5. 包装成 ByteArrayResource 并返回
+//            ByteArrayResource resource = new ByteArrayResource(bytes);
+//            return new ResponseEntity<>(resource, headers, HttpStatus.OK);
+//
+//        } catch (Exception ex) {
+//            throw new RuntimeException("导出资产失败: " + ex.getMessage(), ex);
+//        }
+//    }
+
+    /**
+     * —— 导出：一次性导出页面所有资产 ——
+     */
+    @PostMapping("/export")
+    @PreAuthorize("hasRole('USER') || hasAuthority('user:asset:export')")
+    public ResponseEntity<ByteArrayResource> exportToExcel(
+            @RequestBody(required = false) String requestBody) {
+        try {
+            // 1. 解析前端 JSON 参数（直接用 Map.class 就行了）
+            Map<String, Object> params = objectMapper.readValue(
+                    requestBody == null ? "{}" : requestBody,
+                    Map.class
+            );
+
+            // 2. 用 Service 里统一的 buildExportWorkbook 生成 Workbook
+            Workbook workbook = assetService.buildExportWorkbook(params);
+
+            // 3. 写入到内存
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            workbook.write(baos);
+            workbook.close();
+            byte[] bytes = baos.toByteArray();
+
+            // 4. 构建响应头
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(
+                    MediaType.parseMediaType(
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    )
+            );
+            headers.setContentDisposition(
+                    ContentDisposition
+                            .attachment()
+                            .filename("assets.xlsx")
+                            .build()
+            );
+            headers.setContentLength(bytes.length);
+
+            // 5. 直接把字节数组包装成 Resource，返回给前端
+            ByteArrayResource resource = new ByteArrayResource(bytes);
+            return new ResponseEntity<>(resource, headers, HttpStatus.OK);
+
+        } catch (Exception ex) {
+//            throw new RuntimeException("导出资产失败: " + ex.getMessage(), ex);
+            // 捕获所有异常，返回错误提示的 Blob
+            String errorMessage = "导出失败: " + ex.getMessage();
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .header("Content-Type", "text/plain")
+                    .body(new ByteArrayResource(errorMessage.getBytes()));
+        }
+    }
+    /** —— 导入：上传 Excel 文件并批量入库 —— */
+    @PostMapping("/import")
+    @PreAuthorize("hasRole('USER') || hasAuthority('user:asset:import')")
+    public ResponseEntity<?> importFromExcel(@RequestParam("file") MultipartFile file) {
+        try {
+            // 调用 assetService 的 importFromExcel 方法，将上传的 Excel 文件批量入库
+            AssetImportResultDTO result = assetService.importFromExcel(file);
+            return ResponseUtil.success(result);
+        } catch (Exception e) {
+            return ResponseUtil.error(500, "导入失败: " + e.getMessage());
+            // 返回错误结果
         }
     }
 }
