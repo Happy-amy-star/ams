@@ -11,6 +11,7 @@
       <el-button type="primary" :icon="Search" @click="handleSearch">搜索</el-button>
       <el-button type="primary" :icon="Plus" @click="handleAddWithFetch"> 新增 </el-button>
       <el-button type="warning" :icon="Setting" @click="showColumnSettings">列设置</el-button>
+      <div class="toolbar-right" style="margin-left: auto; display: flex; gap: 10px; align-items: center;">
       <!-- 隐藏的文件输入，用于触发“导入” -->
       <input
           ref="fileInput"
@@ -23,6 +24,7 @@
       <el-button type="primary" :icon="Upload" @click="triggerImport">导入</el-button>
       <!-- 导出按钮 -->
       <el-button type="primary" :icon="Download" @click="onExport">导出</el-button>
+    </div>
     </div>
     <el-table
       :data="tableData"
@@ -316,11 +318,13 @@ const onFileChange = async (e: Event) => {
   if (!files?.length) return
   try {
     const result = await importAssetList(files[0])
-    let msg = `共 ${result.total} 条，成功 ${result.successCount} 条`
+    // const result = res.data
+    const { total, successCount, failureCount, errors } = result
+    let msg = `共 ${total} 条，成功 ${successCount} 条`
     if (result.failureCount > 0) {
-      msg += `，失败 ${result.failureCount} 条（详情见控制台）`
+      msg += `，失败 ${failureCount} 条（详情见控制台）`
       ElMessage.warning(msg)
-      console.table(result.errors)
+      console.table(errors)
     } else {
       ElMessage.success(msg)
     }
@@ -343,6 +347,8 @@ const onFileChange = async (e: Event) => {
 <style scoped>
 .handle-box {
   margin-bottom: 20px;
+  display: flex;
+  align-items: center;
 }
 
 .handle-select {
@@ -419,5 +425,6 @@ const onFileChange = async (e: Event) => {
     width: 100%;
   }
 }
+
 </style>
 

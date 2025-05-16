@@ -216,16 +216,36 @@ export const exportAssetList = async (
  * 从 Excel 批量导入资产
  * @param file 用户选中的 .xls/.xlsx 文件
  */
+// export const importAssetList = async (
+//     file: File
+// ): Promise<AssetImportResultDTO> => {
+//   const form = new FormData();
+//   form.append("file", file);
+//   return await loki.request({
+//     url: "/asset/import",
+//     method: "POST",
+//     data: form,
+//     headers: { "Content-Type": "multipart/form-data" },
+//   } as AxiosRequestConfig);
+// };
+interface ResponseData<T> {
+  code: number;
+  message: string;
+  data: T;
+}
 export const importAssetList = async (
     file: File
 ): Promise<AssetImportResultDTO> => {
-  const form = new FormData();
-  form.append("file", file);
-  return await loki.request({
-    url: "/asset/import",
-    method: "POST",
+  const form = new FormData()
+  form.append('file', file)
+  // 先拿到完整的 ResponseData<AssetImportResultDTO>
+  const wrapper = await loki.request<ResponseData<AssetImportResultDTO>>({
+    url: '/asset/import',
+    method: 'POST',
     data: form,
-    headers: { "Content-Type": "multipart/form-data" },
-  } as AxiosRequestConfig);
-};
+    headers: { 'Content-Type': 'multipart/form-data' },
+  } as AxiosRequestConfig)
 
+  // 再从 wrapper.data 拿到你的 DTO
+  return wrapper.data
+};
