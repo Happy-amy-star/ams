@@ -98,83 +98,83 @@ public class AssetServiceImpl extends ServiceImpl<AssetMapper, Asset> implements
         return assetMapper.getAssetSummary();
     }
 
-//    @Override
-//    public void exportToExcel(Map<String, Object> params, HttpServletResponse response) {
-//        try {
-//            // 只按 name 筛选，其它条件前端可传但 service 暂不使用
-//            String name = (String) params.get("name");
-//            List<AssetDTO> list = assetMapper.getAssetList(0, Integer.MAX_VALUE, name);
-//
-//            // 转 AssetExportDTO 列表
-//            List<AssetExportDTO> exports = list.stream().map(dto -> {
-//                AssetExportDTO d = new AssetExportDTO();
-//                d.setId(dto.getId());
-//                d.setName(dto.getName());
-//                d.setCode(dto.getCode());
-//                d.setSn(dto.getSn());
-//                d.setType(dto.getType());
-//                d.setModel(dto.getModel());
-//                d.setConfig(dto.getConfig());
-//                d.setIp(dto.getIp());
-//                d.setDescription(dto.getDescription());
-//                d.setProvider(dto.getProvider());
-//                d.setDepartmentName(dto.getDepartmentName());
-//                d.setOwnerName(dto.getOwnerName());
-//                d.setUserName(dto.getUserName());
-//                d.setLocation(dto.getLocation());
-//                d.setStatus(dto.getStatus());
-//                d.setUseStatus(dto.getUseStatus());
-//                d.setPurchaseDate(dto.getPurchaseDate());
-//                d.setPurchasePrice(dto.getPurchasePrice());
-//                d.setCount(dto.getCount());
-//                return d;
-//            }).toList();
-//
-//            // 创建 Excel
-//            Workbook wb = new XSSFWorkbook();
-//            Sheet sheet = wb.createSheet("资产列表");
-//            // 表头
-//            Row head = sheet.createRow(0);
-//            String[] headers = {
-//                    "ID","名称","编号","序列号","类型","型号","配置","IP","描述","供应商",
-//                    "部门","负责人","使用人","存放地点","状态","使用状态","购入日期","购买价格","数量"
-//            };
-//            for (int i = 0; i < headers.length; i++) {
-//                head.createCell(i).setCellValue(headers[i]);
-//            }
-//            // 数据行
-//            for (int i = 0; i < exports.size(); i++) {
-//                AssetExportDTO d = exports.get(i);
-//                Row row = sheet.createRow(i + 1);
-//                row.createCell(0).setCellValue(d.getId());
-//                row.createCell(1).setCellValue(d.getName());
-//                row.createCell(2).setCellValue(d.getCode());
-//                row.createCell(3).setCellValue(d.getSn());
-//                row.createCell(4).setCellValue(d.getType());
-//                row.createCell(5).setCellValue(d.getModel());
-//                row.createCell(6).setCellValue(d.getConfig());
-//                row.createCell(7).setCellValue(d.getIp());
-//                row.createCell(8).setCellValue(d.getDescription());
-//                row.createCell(9).setCellValue(d.getProvider());
-//                row.createCell(10).setCellValue(d.getDepartmentName());
-//                row.createCell(11).setCellValue(d.getOwnerName());
-//                row.createCell(12).setCellValue(d.getUserName());
-//                row.createCell(13).setCellValue(d.getLocation());
-//                row.createCell(14).setCellValue(d.getStatus());
-//                row.createCell(15).setCellValue(d.getUseStatus());
-//                row.createCell(16).setCellValue(d.getPurchaseDate());
-//                row.createCell(17).setCellValue(d.getPurchasePrice().doubleValue());
-//                row.createCell(18).setCellValue(d.getCount());
-//            }
-//            // 输出
-//            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-//            response.setHeader("Content-Disposition", "attachment; filename=assets.xlsx");
-//            wb.write(response.getOutputStream());
-//            wb.close();
-//        } catch (Exception e) {
-//            throw new RuntimeException("导出资产 Excel 失败: " + e.getMessage(), e);
-//        }
-//    }
+    @Override
+    public void exportToExcel(Map<String, Object> params, HttpServletResponse response) {
+        try {
+            // 只按 name 筛选，其它条件前端可传但 service 暂不使用
+            String name = (String) params.get("name");
+            List<AssetDTO> list = assetMapper.getAssetList(0, Integer.MAX_VALUE, name);
+
+            // 转 AssetExportDTO 列表
+            List<AssetExportDTO> exports = list.stream().map(dto -> {
+                AssetExportDTO d = new AssetExportDTO();
+                d.setId(dto.getId());
+                d.setName(dto.getName());
+                d.setCode(dto.getCode());
+                d.setSn(dto.getSn());
+                d.setType(dto.getType());
+                d.setModel(dto.getModel());
+                d.setConfig(dto.getConfig());
+                d.setIp(dto.getIp());
+                d.setDescription(dto.getDescription());
+                d.setProvider(dto.getProvider());
+                d.setDepartmentName(dto.getDepartmentName());
+                d.setOwnerName(dto.getOwnerName());
+                d.setUserName(dto.getUserName());
+                d.setLocation(dto.getLocation());
+                d.setStatus(dto.getStatus());
+                d.setUseStatus(dto.getUseStatus());
+                d.setPurchaseDate(dto.getPurchaseDate());
+                d.setPurchasePrice(dto.getPurchasePrice());
+                d.setCount(dto.getCount());
+                return d;
+            }).toList();
+
+            // 创建 Excel
+            Workbook wb = new XSSFWorkbook();
+            Sheet sheet = wb.createSheet("资产列表");
+            // 表头
+            Row head = sheet.createRow(0);
+            String[] headers = {
+                    "ID","名称","编号","序列号","类型","型号","配置","IP","描述","供应商",
+                    "部门","负责人","使用人","存放地点","状态","使用状态","购入日期","购买价格","数量"
+            };
+            for (int i = 0; i < headers.length; i++) {
+                head.createCell(i).setCellValue(headers[i]);
+            }
+            // 数据行
+            for (int i = 0; i < exports.size(); i++) {
+                AssetExportDTO d = exports.get(i);
+                Row row = sheet.createRow(i + 1);
+                row.createCell(0).setCellValue(d.getId());
+                row.createCell(1).setCellValue(d.getName());
+                row.createCell(2).setCellValue(d.getCode());
+                row.createCell(3).setCellValue(d.getSn());
+                row.createCell(4).setCellValue(d.getType());
+                row.createCell(5).setCellValue(d.getModel());
+                row.createCell(6).setCellValue(d.getConfig());
+                row.createCell(7).setCellValue(d.getIp());
+                row.createCell(8).setCellValue(d.getDescription());
+                row.createCell(9).setCellValue(d.getProvider());
+                row.createCell(10).setCellValue(d.getDepartmentName());
+                row.createCell(11).setCellValue(d.getOwnerName());
+                row.createCell(12).setCellValue(d.getUserName());
+                row.createCell(13).setCellValue(d.getLocation());
+                row.createCell(14).setCellValue(d.getStatus());
+                row.createCell(15).setCellValue(d.getUseStatus());
+                row.createCell(16).setCellValue(d.getPurchaseDate());
+                row.createCell(17).setCellValue(d.getPurchasePrice().doubleValue());
+                row.createCell(18).setCellValue(d.getCount());
+            }
+            // 输出
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=assets.xlsx");
+            wb.write(response.getOutputStream());
+            wb.close();
+        } catch (Exception e) {
+            throw new RuntimeException("导出资产 Excel 失败: " + e.getMessage(), e);
+        }
+    }
 
     @Override
     @Transactional
@@ -376,9 +376,7 @@ public class AssetServiceImpl extends ServiceImpl<AssetMapper, Asset> implements
             AssetExportDTO dto = list.get(i);
             Row row = sheet.createRow(i + 1);
             row.createCell(0).setCellValue(dto.getId());
-            System.out.println("资产ID循环体测试: " + dto.getId());
             row.createCell(1).setCellValue(dto.getName());
-            System.out.println("资产名称循环体测试: " + dto.getName());
             row.createCell(2).setCellValue(dto.getCode());
             row.createCell(3).setCellValue(dto.getSn());
             row.createCell(4).setCellValue(dto.getType());
@@ -394,7 +392,7 @@ public class AssetServiceImpl extends ServiceImpl<AssetMapper, Asset> implements
             row.createCell(14).setCellValue(dto.getStatus());
             row.createCell(15).setCellValue(dto.getUseStatus());
             row.createCell(16).setCellValue(dto.getPurchaseDate());
-            row.createCell(17).setCellValue(dto.getPurchasePrice().doubleValue());
+            row.createCell(17).setCellValue(dto.getPurchasePrice() != null ? dto.getPurchasePrice().doubleValue() : 0.0);
             row.createCell(18).setCellValue(dto.getCount());
         }
         return wb;

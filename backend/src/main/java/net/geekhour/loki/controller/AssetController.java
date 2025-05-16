@@ -20,6 +20,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.web.multipart.MultipartFile;
 import net.geekhour.loki.entity.dto.AssetImportResultDTO;
+// 新增以下导入
+import org.springframework.http.HttpHeaders;
 /**
  * <p>
  * 前端控制器
@@ -295,4 +297,5 @@ public class AssetController {
             // 返回错误结果
         }
     }
+
 }

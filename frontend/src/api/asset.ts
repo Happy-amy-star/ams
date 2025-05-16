@@ -192,37 +192,24 @@ export const getAssetSummary = async (): Promise<AssetSummaryResponse> => {
  * 导出资产列表为 Excel（二进制流）
  * @param params 同 getAssetList 的 { pageIndex?, pageSize?, name? }
  */
-// export const exportAssetList = async (
-//     params?: { pageIndex?: number; pageSize?: number; name?: string }
-// ): Promise<Blob> => {
-//   // 这里给 request 指定泛型，告诉 TS data 部分是 Blob
-//   const res = await loki.request<Blob>({
-//     url: "/asset/export",
-//     method: "POST",
-//     data: params || {},
-//     responseType: "blob",
-//   } as AxiosRequestConfig);
-//
-//   // res 是 { code, message, data: Blob }
-//   return res.data;
-// };
 export const exportAssetList = async (
     params?: { pageIndex?: number; pageSize?: number; name?: string }
 ): Promise<Blob> => {
-  try {
-    const res = await loki.request<Blob>({
-      url: "/asset/export",
-      method: "POST",
-      data: params || {},
-      responseType: "blob",
-    } as AxiosRequestConfig);
-    console.log("导出响应数据:", res.data);  // ← 新增日志
-    return res.data;
-  } catch (error) {
-    console.error("导出请求失败:", error);
-    throw error;
-  }
+  // 这里直接用 axios，因为我们要拿原始的 response
+  const response = await loki.request({
+    url: '/asset/export',
+    method: 'POST',
+    data: params || {},
+    responseType: 'blob'    // 告诉 axios 我们要二进制
+  } as AxiosRequestConfig);
+
+  // 如果拦截器按原样返回了 AxiosResponse<Blob>：
+  //    response.data 才是真正的 Blob
+  // 如果拦截器没有拦截，我们直接拿 response 也是 Blob
+  const blob = (response as any).data ?? response;
+  return blob as Blob;
 };
+
 
 
 /**
@@ -241,3 +228,4 @@ export const importAssetList = async (
     headers: { "Content-Type": "multipart/form-data" },
   } as AxiosRequestConfig);
 };
+

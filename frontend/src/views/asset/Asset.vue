@@ -147,6 +147,7 @@ import ColumnSettings from '@/components/asset/ColumnSettings.vue'
 // 新增导入/导出 API
 import { exportAssetList, importAssetList } from '@/api/asset'
 import { ElMessage } from 'element-plus'
+// import {exportAssets, importAssetList, importAssets} from "@/api/asset";
 
 const { assetTypes, fetchAssetTypes } = useAssetType()
 const { departments, fetchDepartments } = useDepartment()
@@ -286,14 +287,14 @@ const onExport = async () => {
       pageSize: query.pageSize,
       name: query.name,
     });
-    console.log('收到 Blob：', blob, '大小：', blob.size, '类型：', blob.type);
+    // console.log('收到 Blob：', blob, '大小：', blob.size, '类型：', blob.type);
     // 检查 blob 是否有效
     if (!blob) {
       ElMessage.error("导出失败：未获取到数据");
       return;
     }
-    // const url = window.URL.createObjectURL(blob);
-    const url = window.URL.createObjectURL(new Blob([blob]));
+    const url = window.URL.createObjectURL(blob);
+    // const url = window.URL.createObjectURL(new Blob([blob]));
     const a = document.createElement('a');
     a.href = url;
     a.download = 'assets.xlsx';
@@ -331,7 +332,11 @@ const onFileChange = async (e: Event) => {
     // 重置文件输入，使得同一文件可再次选择
     fileInput.value!.value = ''
   }
+
 }
+
+
+
 
 </script>
 

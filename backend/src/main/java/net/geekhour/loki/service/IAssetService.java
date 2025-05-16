@@ -6,6 +6,7 @@ import net.geekhour.loki.entity.dto.AssetDTO;
 import net.geekhour.loki.entity.dto.AssetSummaryDTO;
 import org.springframework.http.ResponseEntity;
 
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -50,9 +51,12 @@ public interface IAssetService extends IService<Asset> {
     AssetSummaryDTO getSummary();
 
     /** 导出符合条件的资产到 Excel */
-//    void exportToExcel(Map<String, Object> params, HttpServletResponse response) throws IOException;
+    void exportToExcel(Map<String, Object> params, HttpServletResponse response) throws IOException;
+
+
     /** 从上传的 Excel 解析并批量保存资产，返回导入结果 */
     AssetImportResultDTO importFromExcel(MultipartFile file) throws IOException;
 
     Workbook buildExportWorkbook(Map<String, Object> params);
+
 }
