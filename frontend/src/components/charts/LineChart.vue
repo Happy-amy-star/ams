@@ -14,7 +14,9 @@ import {
   Legend
 } from 'chart.js'
 import { Line } from 'vue-chartjs'
-
+import {
+  computed,  // 添加缺失的导入
+} from 'vue'
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
 
 const props = defineProps<{
@@ -32,7 +34,7 @@ const props = defineProps<{
   }
 }>()
 
-const chartData = props.data || {
+const chartData = computed(() => props.data ?? {
   labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August'],
   datasets: [
     {
@@ -46,11 +48,10 @@ const chartData = props.data || {
       data: [10, 20, 22, 25, 28, 30, 45, 62]
     }
   ]
-}
+})
 
-const chartOptions = props.options || {
-  responsive: true
-}
+const chartOptions = computed(() => props.options ?? { responsive: true })
+
 </script>
 
 <style lang="less" scoped>

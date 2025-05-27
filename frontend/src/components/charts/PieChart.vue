@@ -5,7 +5,9 @@
 <script lang="ts" setup>
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
 import { Pie } from 'vue-chartjs'
-
+import {
+  computed,  // 添加缺失的导入
+} from 'vue'
 ChartJS.register(ArcElement, Tooltip, Legend)
 
 const props = defineProps<{
@@ -23,7 +25,7 @@ const props = defineProps<{
   }
 }>()
 
-const chartData = props.data || {
+const chartData = computed(() => props.data ?? {
   title: 'Pie Chart',
   labels: ['VueJs', 'EmberJs', 'ReactJs', 'AngularJs'],
   datasets: [
@@ -32,11 +34,9 @@ const chartData = props.data || {
       data: [40, 20, 80, 10]
     }
   ]
-}
+})
+const chartOptions = computed(() => props.options ?? { responsive: true })
 
-const chartOptions = props.options || {
-  responsive: true
-}
 </script>
 
 <style lang="less" scoped>
